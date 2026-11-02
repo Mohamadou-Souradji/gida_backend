@@ -1,0 +1,73 @@
+# Gida Jari - preproduction sur un VPS (Docker Compose)
+# Arborescence attendue sur le serveur :
+#   /opt/gida-jari/gida-jari-backend   (ce dossier contient deploy/)
+#   /opt/gida-jari/gida-jari-frontend
+# Lancement : cd /opt/gida-jari/gida-jari-backend/deploy && docker compose up -d --build
+
+name: gida-jari
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: gida_jari
+      POSTGRES_USER: gida_jari
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD manquant dans .env}
+      TZ: Africa/Niamey
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gida_jari -d gida_jari"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ..
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      GJ_DB_URL: jdbc:postgresql://db:5432/gida_jari
+      GJ_DB_USER: gida_jari
+      GJ_DB_PASSWORD: ${DB_PASSWORD}
+      GJ_JWT_SECRET: ${JWT_SECRET:?JWT_SECRET manquant dans .env}
+      GJ_ADMIN_PHONES: ${ADMIN_PHONES:?ADMIN_PHONES manquant dans .env}
+      GJ_CORS_ORIGINES: ${PUBLIC_URL:?PUBLIC_URL manquant dans .env}
+      GJ_SMS_MODE: ${SMS_MODE:-simulation}
+      GJ_SMS_URL: ${SMS_URL:-https://CHANGE_ME}
+      GJ_SMS_API_KEY: ${SMS_API_KEY:-CHANGE_ME}
+      GJ_MOMO_MODE: ${MOMO_MODE:-simulation}
+      GJ_MOMO_WEBHOOK_SECRET: ${MOMO_WEBHOOK_SECRET:?MOMO_WEBHOOK_SECRET manquant dans .env}
+      LOGGING_LEVEL_COM_GIDAJARI: INFO
+      SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "false"
+      JAVA_OPTS: -Xms256m -Xmx768m -Duser.timezone=Africa/Niamey
+    volumes:
+      - uploads:/app/uploads
+    logging:
+      driver: json-file
+      options: { max-size: "20m", max-file: "5" }
+
+  web:
+    build: ../../gida-jari-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:?SITE_ADDRESS manquant dans .env}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  pgdata:
+  uploads:
+  caddy_data:
+  caddy_config:

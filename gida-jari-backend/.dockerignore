@@ -1,0 +1,8 @@
+target
+uploads
+deploy
+docs
+scripts
+*.log
+.idea
+.vscode

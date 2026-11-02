@@ -1,0 +1,101 @@
+
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gida-jari-backend
+
+  datasource:
+    url: ${GJ_DB_URL:jdbc:postgresql://localhost:5434/gida_jari}
+    username: ${GJ_DB_USER:gida_jari}
+    password: ${GJ_DB_PASSWORD:GidaJari_Local_2026}
+
+  jpa:
+    hibernate:
+      # Le schema est gere par Flyway (db/migration) : Hibernate ne fait que le verifier.
+      ddl-auto: validate
+    # Laisse la session JPA ouverte pendant l'ecriture de la reponse JSON :
+    # les relations LAZY (client d'un projet, candidat d'une candidature...)
+    # peuvent ainsi etre serialisees sans LazyInitializationException.
+    open-in-view: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 15MB
+      max-request-size: 15MB
+
+gida-jari:
+  # Origines autorisees a appeler l'API (frontend Angular). Separer par des virgules.
+  cors:
+    origines: ${GJ_CORS_ORIGINES:http://localhost:4200}
+
+  # Numeros de telephone disposant du role ADMIN (validation KYC, arbitrage des litiges).
+  # Ils se connectent par OTP comme tout le monde. Separer par des virgules.
+  admin:
+    telephones: ${GJ_ADMIN_PHONES:+22790000000}
+
+  fichiers:
+    # Stockage local pour le developpement. En production, remplacer
+    # FileStorageService par un stockage objet (S3-compatible, Supabase Storage...).
+    dossier-stockage: ./uploads
+    url-publique-base: /files
+    extensions-autorisees: jpg,jpeg,png,webp,pdf
+
+  jwt:
+    # A surcharger en production via la variable d'environnement GJ_JWT_SECRET (>= 32 caracteres).
+    secret: ${GJ_JWT_SECRET:CHANGE_ME_SECRET_KEY_MIN_256_BITS_XXXXXXXXXXXXXXXX}
+    expiration-ms: 86400000 # 24h
+
+  escrow:
+    commission:
+      standard: 0.02
+      premium: 0.015
+      pro: 0.01
+
+  jalon:
+    auto-validation-heures: 48
+
+  otp:
+    longueur: 6
+    expiration-minutes: 5
+    tentatives-max: 5
+    demandes-max-par-10-minutes: 3
+
+  # Fournisseur SMS (OTP + notifications).
+  #  - simulation : le SMS est seulement ecrit dans les logs (code OTP visible en console).
+  #  - http       : POST JSON {to, message} vers base-url avec l'en-tete Authorization: Bearer <api-key>.
+  sms-provider:
+    mode: ${GJ_SMS_MODE:simulation}
+    base-url: ${GJ_SMS_URL:https://CHANGE_ME}
+    api-key: ${GJ_SMS_API_KEY:CHANGE_ME}
+
+  # Paiements Mobile Money (Airtel Money, Moov Money, Zamani Cash, Nita, Amana).
+  #  - simulation : collecte et versement confirmes immediatement (developpement, demo).
+  #  - operateur  : la collecte reste PENDING_PAYMENT jusqu'au callback de l'operateur
+  #                 sur POST /api/public/paiements/callback (en-tete X-GJ-Signature = webhook-secret).
+  mobile-money:
+    mode: ${GJ_MOMO_MODE:simulation}
+    webhook-secret: ${GJ_MOMO_WEBHOOK_SECRET:CHANGE_ME_WEBHOOK}
+
+  # Notation multi-criteres : poids des 5 criteres (somme = 1).
+  notation:
+    poids:
+      qualite: 0.30
+      delai: 0.20
+      communication: 0.15
+      respect-budget: 0.20
+      proprete: 0.15
+
+logging:
+  level:
+    com.gidajari: DEBUG

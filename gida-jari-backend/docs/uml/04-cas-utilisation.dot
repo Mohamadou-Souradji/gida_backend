@@ -1,0 +1,87 @@
+digraph CasUtilisation {
+  rankdir=LR;
+  fontname="Helvetica";
+  compound=true;
+  node [fontname="Helvetica", fontsize=10];
+
+  node [shape=plaintext, fontsize=11, fontcolor="#1A3C6E"];
+  ActeurClient [label="Client /\nMaitre d'ouvrage"];
+  ActeurArtisan [label="Artisan"];
+  ActeurBTP [label="Entreprise BTP"];
+  ActeurONG [label="ONG /\nInstitution"];
+  ActeurExpert [label="Ingenieur /\nArchitecte"];
+  ActeurFournisseur [label="Fournisseur de\nmateriaux"];
+
+  node [shape=ellipse, style=filled, fillcolor="#E6F1FB", color="#1A3C6E"];
+
+  subgraph cluster_client {
+    label="Client";
+    style=dashed; color="#B4B2A9";
+    UC_AuthOtp [label="S'authentifier par OTP"];
+    UC_KycClient [label="Soumettre KYC de base"];
+    UC_CreerProjet [label="Creer un projet"];
+    UC_DefinirJalons [label="Definir les jalons"];
+    UC_PublierProjet [label="Publier le projet"];
+  }
+  ActeurClient -> UC_AuthOtp;
+  ActeurClient -> UC_KycClient;
+  ActeurClient -> UC_CreerProjet;
+  ActeurClient -> UC_DefinirJalons;
+  ActeurClient -> UC_PublierProjet;
+  UC_PublierProjet -> UC_KycClient [style=dashed, label="<<include>>", arrowhead=vee];
+
+  subgraph cluster_artisan {
+    label="Artisan";
+    style=dashed; color="#B4B2A9";
+    UC_Disponibilite [label="Basculer ma disponibilite"];
+    UC_PreuveJalon [label="Soumettre preuve photo\ngeolocalisee d'un jalon"];
+  }
+  ActeurArtisan -> UC_AuthOtp;
+  ActeurArtisan -> UC_Disponibilite;
+  ActeurArtisan -> UC_PreuveJalon;
+
+  subgraph cluster_btp {
+    label="Entreprise BTP";
+    style=dashed; color="#B4B2A9";
+    UC_RechercheAO [label="Rechercher un appel d'offres"];
+    UC_Candidater [label="Candidater a un AO"];
+  }
+  ActeurBTP -> UC_AuthOtp;
+  ActeurBTP -> UC_RechercheAO;
+  ActeurBTP -> UC_Candidater;
+  UC_Candidater -> UC_KycClient [style=dashed, label="<<include>>", arrowhead=vee];
+
+  subgraph cluster_ong {
+    label="ONG / Institution";
+    style=dashed; color="#B4B2A9";
+    UC_PublierAO [label="Publier un appel d'offres"];
+    UC_Depouiller [label="Depouiller les candidatures"];
+  }
+  ActeurONG -> UC_AuthOtp;
+  ActeurONG -> UC_PublierAO;
+  ActeurONG -> UC_Depouiller;
+  UC_PublierAO -> UC_KycClient [style=dashed, label="<<include>>", arrowhead=vee];
+
+  subgraph cluster_expert {
+    label="Ingenieur / Architecte";
+    style=dashed; color="#B4B2A9";
+    UC_GrilleTarifaire [label="Configurer la grille tarifaire"];
+    UC_Proposition [label="Creer et envoyer une\nproposition d'etude par phases"];
+  }
+  ActeurExpert -> UC_AuthOtp;
+  ActeurExpert -> UC_GrilleTarifaire;
+  ActeurExpert -> UC_Proposition;
+
+  subgraph cluster_fournisseur {
+    label="Fournisseur de materiaux";
+    style=dashed; color="#B4B2A9";
+    UC_Boutique [label="Configurer la boutique"];
+    UC_Catalogue [label="Gerer le catalogue (CRUD)"];
+  }
+  ActeurFournisseur -> UC_AuthOtp;
+  ActeurFournisseur -> UC_Boutique;
+  ActeurFournisseur -> UC_Catalogue;
+
+  label="Cas d'utilisation - Interactions par profil (roadmap 50%)\n(Cahier des Charges Technique, section 1.3 et section 2)";
+  labelloc="t";
+}

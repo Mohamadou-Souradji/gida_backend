@@ -1,0 +1,30 @@
+digraph ClassDiagramProfils {
+  rankdir=BT;
+  fontname="Helvetica";
+  node [shape=record, fontname="Helvetica", fontsize=10];
+  edge [fontname="Helvetica", fontsize=9];
+
+  User [label="{User (abstrait)|+ id : UUID\l+ phone : String\l+ profileType : ProfileType\l+ kycLevel : KycLevel\l+ walletBalance : Long\l+ profileScore : Double\l+ phoneVerifie : boolean\l+ languePreferee : String\l}"];
+
+  ClientParticulier [label="{ClientParticulier|+ nom : String\l+ prenom : String\l+ adresse : String\l+ typeClient : String\l}"];
+  Artisan [label="{Artisan|+ nom, prenom : String\l+ corpsDeMetier : String\l+ zoneIntervention : String\l+ tarifJournalierFcfa : Long\l+ disponibilite : DisponibiliteStatus\l+ badge : String\l}"];
+  EntrepriseBTP [label="{EntrepriseBTP|+ nomCommercial : String\l+ nif, rccm : String\l+ domaineActivite : String\l+ effectif : Integer\l}"];
+  IngenieurArchitecte [label="{IngenieurArchitecte|+ nom, prenom : String\l+ specialite : String\l+ numeroOrdre : String\l+ agrementMinisteriel : String\l+ grilleTarifaireJson : String\l}"];
+  FournisseurMateriaux [label="{FournisseurMateriaux|+ nomBoutique : String\l+ nif : String\l+ categories : String\l+ zonesLivraison : String\l+ fraisLivraisonFcfa : Long\l}"];
+  ONGInstitution [label="{ONGInstitution|+ raisonSociale : String\l+ nifOuRccm : String\l+ typeOrganisation : String\l+ statutLegal : String\l+ oddCible : String\l}"];
+
+  edge [arrowhead=empty];
+  ClientParticulier -> User;
+  Artisan -> User;
+  EntrepriseBTP -> User;
+  IngenieurArchitecte -> User;
+  FournisseurMateriaux -> User;
+  ONGInstitution -> User;
+
+  PortfolioItem [label="{PortfolioItem|+ titre : String\l+ description : String\l+ photoUrl : String\l}"];
+  edge [arrowhead=odiamond, dir=back];
+  User -> PortfolioItem [taillabel="1", headlabel="0..*"];
+
+  label="Diagramme de classes - Superclasse User et specialisation des 6 profils\n(Cahier des Charges Technique, section 1.2)";
+  labelloc="t";
+}

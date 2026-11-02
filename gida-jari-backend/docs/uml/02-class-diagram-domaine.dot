@@ -1,0 +1,59 @@
+digraph ClassDiagramDomaine {
+  rankdir=LR;
+  fontname="Helvetica";
+  node [shape=record, fontname="Helvetica", fontsize=10];
+  edge [fontname="Helvetica", fontsize=9];
+
+  User [label="{User (abstrait)|+ id : UUID\l+ profileType\l+ kycLevel\l}"];
+  Projet [label="{Projet|+ titre : String\l+ description : String\l+ budgetEstimeFcfa : Long\l+ publie : boolean\l}"];
+  Jalon [label="{Jalon|+ libelle : String\l+ statut : JalonStatus\l+ montantFcfa : Long\l+ preuvePhotoUrls : String\l+ latitude, longitude : Double\l}"];
+  EscrowTransaction [label="{EscrowTransaction|+ montantTotalFcfa : Long\l+ montantLibereFcfa : Long\l+ niveauCommission\l+ statut : EscrowStatus\l}"];
+  EscrowMilestone [label="{EscrowMilestone|+ montantFcfa : Long\l+ libere : boolean\l}"];
+  KYCSubmission [label="{KYCSubmission|+ niveauVise : KycLevel\l+ typeDocument : String\l+ documentUrl : String\l+ statut : String\l}"];
+  PortfolioItem [label="{PortfolioItem|+ titre, photoUrl : String\l}"];
+  Notation [label="{Notation|+ qualite, delai, communication\l+ respectBudget, proprete : int\l+ scoreGlobal : Double\l}"];
+  Conversation [label="{Conversation}"];
+  Message [label="{Message|+ contenu : String\l+ lu : boolean\l}"];
+  CatalogProduit [label="{CatalogProduit|+ nom, categorie, unite : String\l+ prixUnitaireFcfa : Long\l+ stockDisponible : Integer\l}"];
+  AppelOffre [label="{AppelOffre|+ titre : String\l+ dateLimiteDepot : Instant\l+ statut : AppelOffreStatus\l}"];
+  CandidatureAO [label="{CandidatureAO|+ propositionTechnique : String\l+ montantPropositionFcfa : Long\l+ statut : CandidatureStatus\l}"];
+  NotificationLog [label="{NotificationLog|+ canal : NotificationChannel\l+ titre, contenu : String\l}"];
+  WhatsAppSession [label="{WhatsAppSession|+ waPhoneId : String\l+ etatConversation : String\l}"];
+  AdminActionLog [label="{AdminActionLog|+ action : String\l+ cibleType, cibleId : String\l}"];
+  OTPVerification [label="{OTPVerification|+ phone : String\l+ codeHash : String\l+ canal : OtpChannel\l}"];
+  PropositionEtude [label="{PropositionEtude|+ titre : String\l+ montantTotalFcfa : Long\l+ statut : PropositionEtudeStatus\l}"];
+  PhaseEtude [label="{PhaseEtude|+ ordre : Integer\l+ libelle : String\l+ montantFcfa : Long\l}"];
+
+  edge [arrowhead=diamond];
+  Projet -> Jalon [label="1..*"];
+  EscrowTransaction -> EscrowMilestone [label="1..*"];
+  AppelOffre -> CandidatureAO [label="1..*"];
+  Conversation -> Message [label="1..*"];
+  PropositionEtude -> PhaseEtude [label="1..*"];
+  FournisseurMateriaux [label="{FournisseurMateriaux}"];
+  FournisseurMateriaux -> CatalogProduit [label="1..*"];
+
+  edge [arrowhead=odiamond];
+  User -> PortfolioItem [label="0..*"];
+
+  edge [arrowhead=vee, style=solid, arrowtail=none];
+  User -> Projet [label="client", dir=back];
+  User -> KYCSubmission [label="soumet", dir=back];
+  User -> EscrowTransaction [label="payeur/beneficiaire", dir=back];
+  User -> Notation [label="note/est note", dir=back];
+  User -> Conversation [label="participe", dir=back];
+  User -> AppelOffre [label="institution", dir=back];
+  User -> CandidatureAO [label="candidat", dir=back];
+  User -> NotificationLog [label="destinataire", dir=back];
+  User -> WhatsAppSession [label="", dir=back];
+  User -> AdminActionLog [label="admin", dir=back];
+  User -> PropositionEtude [label="expert", dir=back];
+  Projet -> PropositionEtude [label="", dir=back];
+
+  { rank=same; OTPVerification; }
+  note [shape=note, label="OTPVerification est lie par numero\nde telephone (pas de FK vers User) :\nl'inscription n'existe pas encore\nau moment de la verification OTP."];
+  note -> OTPVerification [style=dashed, arrowhead=none];
+
+  label="Diagramme de classes - Entites metier P1/P2/P3\n(Cahier des Charges Technique, section 1.1)";
+  labelloc="t";
+}

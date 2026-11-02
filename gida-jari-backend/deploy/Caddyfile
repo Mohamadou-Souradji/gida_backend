@@ -1,0 +1,33 @@
+# Gida Jari - serveur web (Caddy)
+# SITE_ADDRESS = ton domaine (ex. preprod.gidajari.com) -> HTTPS Let's Encrypt automatique
+#             = :80                                    -> HTTP simple sur l'adresse IP (premier essai)
+{$SITE_ADDRESS} {
+	encode zstd gzip
+
+	# API et fichiers televerses -> backend Spring Boot
+	handle /api/* {
+		reverse_proxy backend:8080
+	}
+	handle /files/* {
+		reverse_proxy backend:8080
+	}
+
+	# Application Angular (SPA) : toute autre URL renvoie index.html
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+		header /index.html Cache-Control "no-cache"
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+	request_body /api/files* {
+		max_size 16MB
+	}
+}

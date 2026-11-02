@@ -1,0 +1,36 @@
+digraph EtatEscrow {
+  rankdir=LR;
+  fontname="Helvetica";
+  node [shape=ellipse, style=filled, fillcolor="#E6F1FB", color="#1A3C6E", fontname="Helvetica", fontsize=10];
+  edge [fontname="Helvetica", fontsize=9, color="#1A3C6E"];
+
+  start [shape=point, width=0.12, fillcolor=black, style=filled];
+
+  DRAFT;
+  PENDING_PAYMENT [label="PENDING_PAYMENT"];
+  FUNDED;
+  PARTIAL_RELEASE [label="PARTIAL_RELEASE"];
+  COMPLETED [style=filled, fillcolor="#EAF3DE", color="#3B6D11"];
+  DISPUTED [style=filled, fillcolor="#FAEEDA", color="#854F0B"];
+  RESOLVED_CLIENT [label="RESOLVED_CLIENT", style=filled, fillcolor="#EAF3DE", color="#3B6D11"];
+  RESOLVED_PROVIDER [label="RESOLVED_PROVIDER", style=filled, fillcolor="#EAF3DE", color="#3B6D11"];
+  REFUNDED [style=filled, fillcolor="#FCEBEB", color="#A32D2D"];
+
+  start -> DRAFT;
+  DRAFT -> PENDING_PAYMENT [label="demarrerPaiement()"];
+  PENDING_PAYMENT -> FUNDED [label="confirmerFinancement()\n(callback Mobile Money)"];
+  FUNDED -> PARTIAL_RELEASE [label="libererJalon()\n(jalon valide, commission prelevee)"];
+  PARTIAL_RELEASE -> PARTIAL_RELEASE [label="libererJalon()\n(jalon suivant)"];
+  PARTIAL_RELEASE -> COMPLETED [label="libererJalon()\n(dernier jalon)"];
+  FUNDED -> COMPLETED [label="libererJalon()\n(jalon unique)"];
+
+  FUNDED -> DISPUTED [label="ouvrirLitige()"];
+  PARTIAL_RELEASE -> DISPUTED [label="ouvrirLitige()"];
+
+  DISPUTED -> RESOLVED_CLIENT [label="resoudreLitige()"];
+  DISPUTED -> RESOLVED_PROVIDER [label="resoudreLitige()"];
+  DISPUTED -> REFUNDED [label="resoudreLitige()"];
+
+  label="Machine a etats de l'Escrow\n(Cahier des Charges Technique, section 1.3)";
+  labelloc="t";
+}
