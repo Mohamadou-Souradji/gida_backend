@@ -45,8 +45,15 @@ def call(method, path, token=None, body=None, expect=200, raw=None, headers=None
     return res
 
 
+def email_de(phone):
+    return "u" + phone.replace(" ", "").replace("+", "")[-8:] + "@test.gidajari.com"
+
+
 def login(phone, profil):
-    call("POST", "/api/auth/otp/demander", body={"phone": phone}, expect=202)
+    """Connexion par code envoye par email : a l'inscription le serveur demande d'abord l'email."""
+    r = call("POST", "/api/auth/otp/demander", body={"phone": phone}, expect=[200, 202])
+    if isinstance(r, dict) and r.get("emailRequis"):
+        call("POST", "/api/auth/otp/demander", body={"phone": phone, "email": email_de(phone)}, expect=202)
     norm = phone.replace(" ", "")
     norm = norm if norm.startswith("+") else "+227" + norm
     code = [l for l in open(LOG, encoding="utf-8", errors="ignore") if "CODE OTP" in l and norm in l][-1].split()[-1]
@@ -82,8 +89,32 @@ expT, expId, _ = login("90000005", "INGENIEUR_ARCHITECTE")
 fouT, fouId, _ = login("90000006", "FOURNISSEUR_MATERIAUX")
 fou2T, fou2Id, _ = login("90000007", "FOURNISSEUR_MATERIAUX")
 
+# ---------------------------------------------------------------- code par email (V5)
+r = call("POST", "/api/auth/otp/demander", body={"phone": "90000098"}, expect=200)
+check(r["emailRequis"] is True and r["nouvelUtilisateur"] is True and r["canal"] == "EMAIL", f"inscription : email demande ({r})")
+check(not any("+22790000098" in l for l in open(LOG, encoding="utf-8", errors="ignore") if "CODE OTP" in l), "aucun code envoye sans email")
+call("POST", "/api/auth/otp/demander", body={"phone": "90000098", "email": "pas-un-email"}, expect=400)
+call("POST", "/api/auth/otp/demander", body={"phone": "90000098", "email": "u90000001@TEST.gidajari.com"}, expect=409)
+r = call("POST", "/api/auth/otp/demander", body={"phone": "90000098", "email": "  Nouveau.Compte@Gmail.com "}, expect=202)
+check(r["emailMasque"] == "n***e@gmail.com" and r["emailRequis"] is False, f"email masque ({r})")
+ligne = [l for l in open(LOG, encoding="utf-8", errors="ignore") if "CODE OTP" in l and "+22790000098" in l][-1]
+check("(email nouveau.compte@gmail.com)" in ligne, "code envoye a l'email normalise")
+call("POST", "/api/auth/otp/verifier", body={"phone": "90000098", "code": ligne.split()[-1]}, expect=400)  # profil manquant
+call("POST", "/api/auth/otp/demander", body={"phone": "90000098", "email": "nouveau.compte@gmail.com"}, expect=202)
+ligne = [l for l in open(LOG, encoding="utf-8", errors="ignore") if "CODE OTP" in l and "+22790000098" in l][-1]
+nvR = call("POST", "/api/auth/otp/verifier", body={"phone": "90000098", "code": ligne.split()[-1], "profileType": "ARTISAN"})
+nvMoi = call("GET", "/api/compte/moi", nvR["token"])
+check(nvMoi["email"] == "nouveau.compte@gmail.com" and nvMoi["kycLevel"] == "NIVEAU_1_TELEPHONE_VERIFIE", f"compte cree avec son email ({nvMoi})")
+# compte existant : le code part sur l'email enregistre, un autre email saisi est ignore
+r = call("POST", "/api/auth/otp/demander", body={"phone": "90000001", "email": "pirate@evil.com"}, expect=202)
+check(r["nouvelUtilisateur"] is False and r["emailMasque"] == "u***1@test.gidajari.com", f"connexion : email du compte ({r})")
+ligne = [l for l in open(LOG, encoding="utf-8", errors="ignore") if "CODE OTP" in l and "+22790000001" in l][-1]
+check("pirate@evil.com" not in ligne and "u90000001@test.gidajari.com" in ligne, "email du compte non modifiable a la connexion")
+check(call("GET", "/api/compte/moi", cliT)["email"] == "u90000001@test.gidajari.com", "email dans /compte/moi")
+check("email" not in call("GET", f"/api/clients/{cliId}", artT), "email non expose dans le profil public")
+
 # mauvais code OTP
-call("POST", "/api/auth/otp/demander", body={"phone": "90000099"}, expect=202)
+call("POST", "/api/auth/otp/demander", body={"phone": "90000099", "email": "u90000099@test.gidajari.com"}, expect=202)
 call("POST", "/api/auth/otp/verifier", body={"phone": "90000099", "code": "0000000", "profileType": "ARTISAN"}, expect=401)
 
 # securite de base

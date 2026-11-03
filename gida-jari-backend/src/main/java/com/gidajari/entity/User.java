@@ -44,6 +44,15 @@ public abstract class User {
     @Column(name = "phone", nullable = false, unique = true, length = 20)
     private String phone;
 
+    /** Recoit le code de connexion. Jamais expose dans les profils publics, comme le telephone. */
+    @JsonIgnore
+    @Column(name = "email", unique = true, length = 160)
+    private String email;
+
+    @JsonIgnore
+    @Column(name = "email_verifie", nullable = false)
+    private boolean emailVerifie = false;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "profile_type", insertable = false, updatable = false)
     private ProfileType profileType;

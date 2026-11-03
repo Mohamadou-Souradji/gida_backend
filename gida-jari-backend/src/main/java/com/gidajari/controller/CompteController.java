@@ -54,7 +54,7 @@ public class CompteController {
     }
 
     private CompteVue vue(User u) {
-        return new CompteVue(u.getId(), u.getPhone(), u.getProfileType() != null ? u.getProfileType().name() : null,
+        return new CompteVue(u.getId(), u.getPhone(), u.getEmail(), u.getProfileType() != null ? u.getProfileType().name() : null,
                 u.getKycLevel().name(), u.getWalletBalance(), u.getProfileScore(), u.getLanguePreferee(),
                 currentUserProvider.estAdmin(), currentUserProvider.roleAdmin(), notificationService.nombreNonLues(u.getId()));
     }

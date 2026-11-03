@@ -13,7 +13,7 @@ public final class Vues {
     public record ProjetVue(Projet projet, EscrowTransaction escrow) {}
 
     /** Informations du compte connecte (dont le solde, jamais expose publiquement). */
-    public record CompteVue(String id, String phone, String profileType, String kycLevel,
+    public record CompteVue(String id, String phone, String email, String profileType, String kycLevel,
                             Long walletBalance, Double profileScore, String languePreferee,
                             boolean admin, String adminRole, long notificationsNonLues) {}
 }

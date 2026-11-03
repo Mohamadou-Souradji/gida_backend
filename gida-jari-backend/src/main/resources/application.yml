@@ -70,6 +70,21 @@ gida-jari:
     expiration-minutes: 5
     tentatives-max: 5
     demandes-max-par-10-minutes: 3
+    canal: ${GJ_OTP_CANAL:email}
+
+  # Emails (code de connexion OTP).
+  #  - simulation : rien n'est envoye, le code est seulement affiche dans les logs.
+  #  - smtp       : envoi reel via le serveur SMTP configure ci-dessous.
+  email:
+    mode: ${GJ_EMAIL_MODE:simulation}
+    expediteur: ${GJ_EMAIL_FROM:no-reply@gidajari.com}
+    nom-expediteur: ${GJ_EMAIL_FROM_NAME:Gida Jari}
+    smtp:
+      hote: ${GJ_SMTP_HOST:smtp.gmail.com}
+      port: ${GJ_SMTP_PORT:587}
+      securite: ${GJ_SMTP_SECURITE:starttls}
+      utilisateur: ${GJ_SMTP_USER:}
+      mot-de-passe: ${GJ_SMTP_PASSWORD:}
 
   # Fournisseur SMS (OTP + notifications).
   #  - simulation : le SMS est seulement ecrit dans les logs (code OTP visible en console).

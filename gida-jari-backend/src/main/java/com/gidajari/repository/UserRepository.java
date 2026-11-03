@@ -14,6 +14,7 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, String> {
     Optional<User> findByPhone(String phone);
     boolean existsByPhone(String phone);
+    Optional<User> findByEmail(String email);
 
     // --- Back-office (tableau de bord)
     @Query("select u.profileType, count(u) from User u group by u.profileType")

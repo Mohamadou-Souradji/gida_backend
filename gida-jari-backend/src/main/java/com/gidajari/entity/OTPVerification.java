@@ -35,6 +35,10 @@ public class OTPVerification {
     @Column(nullable = false)
     private String codeHash;
 
+    /** Email destinataire du code (canal EMAIL) : sert a rattacher l'email au compte a la verification. */
+    @Column(length = 160)
+    private String email;
+
     @Enumerated(EnumType.STRING)
     private OtpChannel canal = OtpChannel.SMS;
 

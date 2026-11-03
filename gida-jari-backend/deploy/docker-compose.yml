@@ -36,6 +36,15 @@ services:
       GJ_JWT_SECRET: ${JWT_SECRET:?JWT_SECRET manquant dans .env}
       GJ_ADMIN_PHONES: ${ADMIN_PHONES:?ADMIN_PHONES manquant dans .env}
       GJ_CORS_ORIGINES: ${PUBLIC_URL:?PUBLIC_URL manquant dans .env}
+      GJ_OTP_CANAL: ${OTP_CANAL:-email}
+      GJ_EMAIL_MODE: ${EMAIL_MODE:-simulation}
+      GJ_EMAIL_FROM: ${EMAIL_FROM:-no-reply@gidajari.com}
+      GJ_EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-Gida Jari}
+      GJ_SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      GJ_SMTP_PORT: ${SMTP_PORT:-587}
+      GJ_SMTP_SECURITE: ${SMTP_SECURITE:-starttls}
+      GJ_SMTP_USER: ${SMTP_USER:-}
+      GJ_SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       GJ_SMS_MODE: ${SMS_MODE:-simulation}
       GJ_SMS_URL: ${SMS_URL:-https://CHANGE_ME}
       GJ_SMS_API_KEY: ${SMS_API_KEY:-CHANGE_ME}

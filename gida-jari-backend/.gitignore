@@ -1,3 +1,48 @@
+# ===== Maven / compilation =====
 target/
-uploads/
+*.class
+
+# ===== Fichiers uploades par l'application (photos, documents) =====
+/uploads/
+
+# ===== Configuration locale et secrets =====
+/config/
 .env
+.env.*
+!.env.example
+*.properties.local
+
+# ===== IDE : IntelliJ =====
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# ===== IDE : VS Code =====
+.vscode/
+*.code-workspace
+
+# ===== IDE : Eclipse / STS =====
+.classpath
+.project
+.settings/
+bin/
+
+# ===== Logs et fichiers temporaires =====
+*.log
+logs/
+hs_err_pid*
+*.tmp
+*.bak
+
+# ===== Systeme d'exploitation =====
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== Docker : ne rien ignorer de plus que le necessaire =====
+# (le Dockerfile et docker-compose.yml restent versionnes)
+
+# ===== Maven wrapper : garder le jar du wrapper =====
+!.mvn/wrapper/maven-wrapper.jar

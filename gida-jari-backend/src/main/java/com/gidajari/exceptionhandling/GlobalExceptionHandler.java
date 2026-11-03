@@ -1,6 +1,7 @@
 package com.gidajari.exceptionhandling;
 
 import com.gidajari.service.exception.AccesRefuseException;
+import com.gidajari.service.exception.EnvoiImpossibleException;
 import com.gidajari.service.exception.KycInsuffisantException;
 import com.gidajari.service.exception.RessourceIntrouvableException;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +44,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RessourceIntrouvableException.class)
     public ResponseEntity<Map<String, Object>> gererIntrouvable(RessourceIntrouvableException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(corps("INTROUVABLE", ex.getMessage()));
+    }
+
+    @ExceptionHandler(EnvoiImpossibleException.class)
+    public ResponseEntity<Map<String, Object>> gererEnvoiImpossible(EnvoiImpossibleException ex) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(corps("ENVOI_IMPOSSIBLE", ex.getMessage()));
     }
 
     @ExceptionHandler(IllegalStateException.class)

@@ -18,7 +18,7 @@ mvn spring-boot:run
 ```
 
 Il faut Java 17+ et une base PostgreSQL `gida_jari` (utilisateur `gida_jari`, voir `application.yml`).
-Flyway crée le schéma au démarrage : V1, V2, V3, puis V4 (back-office).
+Flyway crée le schéma au démarrage : V1 à V5 (V4 : back-office, V5 : code par email).
 
 Toute la configuration sensible se surcharge par variables d'environnement :
 
@@ -28,11 +28,18 @@ Toute la configuration sensible se surcharge par variables d'environnement :
 | `GJ_JWT_SECRET` | Clé de signature JWT (≥ 32 caractères) | valeur de dev **à changer** |
 | `GJ_ADMIN_PHONES` | Super-admins d'office (amorçage du back-office), séparés par des virgules. Les autres membres de l'équipe sont ajoutés depuis l'écran Équipe | `+22790000000` |
 | `GJ_CORS_ORIGINES` | URL du frontend | `http://localhost:4200` |
+| `GJ_OTP_CANAL` | Canal du code de connexion : `email` ou `sms` | `email` |
+| `GJ_EMAIL_MODE` | `simulation` (code affiché en console) ou `smtp` (envoi réel) | `simulation` |
+| `GJ_EMAIL_FROM` / `GJ_EMAIL_FROM_NAME` | Expéditeur des emails | `no-reply@gidajari.com` / `Gida Jari` |
+| `GJ_SMTP_HOST` / `GJ_SMTP_PORT` / `GJ_SMTP_SECURITE` | Serveur SMTP (`starttls` port 587, `ssl` port 465, `aucune`) | `smtp.gmail.com` / `587` / `starttls` |
+| `GJ_SMTP_USER` / `GJ_SMTP_PASSWORD` | Identifiants SMTP (Gmail : mot de passe d'application) | vides |
 | `GJ_SMS_MODE` | `simulation` (code OTP affiché en console) ou `http` (agrégateur SMS) | `simulation` |
 | `GJ_MOMO_MODE` | `simulation` (paiements confirmés immédiatement) ou `operateur` | `simulation` |
 | `GJ_MOMO_WEBHOOK_SECRET` | Secret du callback opérateur (`X-GJ-Signature`) | à changer |
 
-**Premier test.** Connectez-vous avec le numéro `90 00 00 00`, qui est super-admin par défaut (menu Administration). Le code OTP s'affiche dans la console du backend (`>>> CODE OTP`).
+**Premier test.** Connectez-vous avec le numéro `90 00 00 00`, qui est super-admin par défaut (menu Administration). À la première connexion, l'application demande un email : le code y est envoyé (en mode `simulation`, il s'affiche dans la console : `>>> CODE OTP`).
+
+**Code de connexion par email.** Le téléphone reste l'identifiant du compte (Mobile Money, admins). L'email est demandé à l'inscription, puis le code part toujours sur l'email enregistré (masqué à l'écran, ex. `m***a@gmail.com`). Un email ne peut servir qu'à un seul compte. Le client SMTP est intégré (`SmtpEmailGateway`, sans dépendance) : TLS obligatoire avec vérification du certificat.
 
 ## Ce que couvre l'application
 
@@ -44,7 +51,7 @@ Toute la configuration sensible se surcharge par variables d'environnement :
 | 2. Commission différée 2 % / 1,5 % / 1 % | Prélevée à chaque libération de tranche ; montant et net enregistrés sur `escrow_milestone`. |
 | 3. Auto-validation 48 h | `JalonAutoValidationScheduler` (toutes les heures) valide le jalon **et libère les fonds**. Rien n'est libéré pendant un litige. |
 | 4. KYC obligatoire | `KYCService.exigerNiveau` (HTTP 403 `KYC_INSUFFISANT`). Niveau 1 = OTP, niveau 2 = profil complété (automatique), niveaux 3 à 6 = document validé par un admin. Le niveau 2 est exigé pour publier un projet ou un AO, pour payer, et pour envoyer une proposition. Le niveau 3 est exigé pour candidater à un AO et pour être engagé ou recevoir des fonds. |
-| 5. Authentification par téléphone | OTP SMS haché (BCrypt), 5 min, usage unique. Limité à 5 essais par code et 3 demandes par 10 min. Les numéros sont normalisés au format +227. |
+| 5. Authentification par téléphone | Code à usage unique envoyé par email (ou SMS), haché (BCrypt), 5 min, usage unique. Limité à 5 essais par code et 3 demandes par 10 min. Les numéros sont normalisés au format +227. |
 
 ### Machine à états de l'escrow (section 1.3)
 
