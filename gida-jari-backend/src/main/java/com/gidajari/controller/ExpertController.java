@@ -49,16 +49,28 @@ public class ExpertController {
         return expertRepository.findById(id).orElseThrow(() -> new RessourceIntrouvableException("Expert introuvable"));
     }
 
-    @PutMapping("/{id}")
+    /**
+     * Compléter le profil expert avec les informations spécifiques.
+     * L'utilisateur doit être connecté.
+     */
+    @PatchMapping("/complete-profile")
     @Transactional
-    public IngenieurArchitecte mettreAJourProfil(@PathVariable String id, @RequestBody IngenieurArchitecte maj) {
-        currentUserProvider.exigerProprietaire(id);
-        IngenieurArchitecte existant = getProfil(id);
-        existant.setNom(maj.getNom());
-        existant.setPrenom(maj.getPrenom());
-        existant.setSpecialite(maj.getSpecialite());
-        existant.setNumeroOrdre(maj.getNumeroOrdre());
-        existant.setAgrementMinisteriel(maj.getAgrementMinisteriel());
+    public IngenieurArchitecte completerProfil(@RequestBody IngenieurArchitecte dto) {
+        String userId = currentUserProvider.getCurrentUserId();
+        IngenieurArchitecte existant = expertRepository.findById(userId)
+                .orElseThrow(() -> new RessourceIntrouvableException("Expert introuvable"));
+        
+        // Mettre à jour les champs spécifiques
+        if (dto.getSpecialite() != null) {
+            existant.setSpecialite(dto.getSpecialite());
+        }
+        if (dto.getNumeroOrdre() != null) {
+            existant.setNumeroOrdre(dto.getNumeroOrdre());
+        }
+        if (dto.getAgrementMinisteriel() != null) {
+            existant.setAgrementMinisteriel(dto.getAgrementMinisteriel());
+        }
+        
         IngenieurArchitecte saved = expertRepository.save(existant);
         kycService.verifierIdentiteDeclaree(saved);
         return saved;

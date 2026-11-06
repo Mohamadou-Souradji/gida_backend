@@ -54,17 +54,35 @@ public class BtpController {
         return entrepriseRepository.findById(id).orElseThrow(() -> new RessourceIntrouvableException("Entreprise introuvable"));
     }
 
-    @PutMapping("/{id}")
+    /**
+     * Compléter le profil entreprise BTP avec les informations spécifiques.
+     * L'utilisateur doit être connecté.
+     */
+    @PatchMapping("/complete-profile")
     @PreAuthorize("hasRole('ENTREPRISE_BTP')")
     @Transactional
-    public EntrepriseBTP mettreAJourProfil(@PathVariable String id, @RequestBody EntrepriseBTP maj) {
-        currentUserProvider.exigerProprietaire(id);
-        EntrepriseBTP existant = getProfil(id);
-        existant.setNomCommercial(maj.getNomCommercial());
-        existant.setNif(maj.getNif());
-        existant.setRccm(maj.getRccm());
-        existant.setDomaineActivite(maj.getDomaineActivite());
-        existant.setEffectif(maj.getEffectif());
+    public EntrepriseBTP completerProfil(@RequestBody EntrepriseBTP dto) {
+        String userId = currentUserProvider.getCurrentUserId();
+        EntrepriseBTP existant = entrepriseRepository.findById(userId)
+                .orElseThrow(() -> new RessourceIntrouvableException("Entreprise introuvable"));
+        
+        // Mettre à jour les champs spécifiques
+        if (dto.getNomCommercial() != null) {
+            existant.setNomCommercial(dto.getNomCommercial());
+        }
+        if (dto.getNif() != null) {
+            existant.setNif(dto.getNif());
+        }
+        if (dto.getRccm() != null) {
+            existant.setRccm(dto.getRccm());
+        }
+        if (dto.getDomaineActivite() != null) {
+            existant.setDomaineActivite(dto.getDomaineActivite());
+        }
+        if (dto.getEffectif() != null) {
+            existant.setEffectif(dto.getEffectif());
+        }
+        
         EntrepriseBTP saved = entrepriseRepository.save(existant);
         kycService.verifierIdentiteDeclaree(saved);
         return saved;

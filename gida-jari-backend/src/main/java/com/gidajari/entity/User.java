@@ -40,18 +40,23 @@ public abstract class User {
     private String id;
 
     /** Jamais expose dans les profils publics (anti-contournement : les echanges passent par la plateforme). */
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @Column(name = "phone", nullable = false, unique = true, length = 20)
     private String phone;
 
     /** Recoit le code de connexion. Jamais expose dans les profils publics, comme le telephone. */
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @Column(name = "email", unique = true, length = 160)
     private String email;
 
     @JsonIgnore
     @Column(name = "email_verifie", nullable = false)
     private boolean emailVerifie = false;
+
+    /** Hash du mot de passe (BCrypt). */
+    @JsonIgnore
+    @Column(name = "password_hash", length = 100)
+    private String passwordHash;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "profile_type", insertable = false, updatable = false)

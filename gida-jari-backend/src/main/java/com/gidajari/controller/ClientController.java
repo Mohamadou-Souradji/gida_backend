@@ -59,15 +59,22 @@ public class ClientController {
         return clientRepository.findById(id).orElseThrow(() -> new RessourceIntrouvableException("Client introuvable"));
     }
 
-    @PutMapping("/{id}")
+    /**
+     * Compléter le profil client avec les informations spécifiques.
+     * L'utilisateur doit être connecté.
+     */
+    @PatchMapping("/complete-profile")
     @Transactional
-    public ClientParticulier mettreAJourProfil(@PathVariable String id, @RequestBody ClientParticulier maj) {
-        currentUserProvider.exigerProprietaire(id);
-        ClientParticulier existant = getProfil(id);
-        existant.setNom(maj.getNom());
-        existant.setPrenom(maj.getPrenom());
-        existant.setAdresse(maj.getAdresse());
-        existant.setTypeClient(maj.getTypeClient());
+    public ClientParticulier completerProfil(@RequestBody ClientParticulier dto) {
+        String userId = currentUserProvider.getCurrentUserId();
+        ClientParticulier existant = clientRepository.findById(userId)
+                .orElseThrow(() -> new RessourceIntrouvableException("Client introuvable"));
+        
+        // Mettre à jour uniquement les champs spécifiques (pas nom/prénom/adresse)
+        if (dto.getTypeClient() != null) {
+            existant.setTypeClient(dto.getTypeClient());
+        }
+        
         ClientParticulier saved = clientRepository.save(existant);
         kycService.verifierIdentiteDeclaree(saved);
         return saved;

@@ -38,17 +38,35 @@ public class SupplierController {
         return fournisseurRepository.findById(id).orElseThrow(() -> new RessourceIntrouvableException("Fournisseur introuvable"));
     }
 
-    @PutMapping("/{id}")
+    /**
+     * Compléter le profil fournisseur avec les informations spécifiques.
+     * L'utilisateur doit être connecté.
+     */
+    @PatchMapping("/complete-profile")
     @PreAuthorize("hasRole('FOURNISSEUR_MATERIAUX')")
     @Transactional
-    public FournisseurMateriaux mettreAJourProfil(@PathVariable String id, @RequestBody FournisseurMateriaux maj) {
-        currentUserProvider.exigerProprietaire(id);
-        FournisseurMateriaux existant = getProfil(id);
-        existant.setNomBoutique(maj.getNomBoutique());
-        existant.setNif(maj.getNif());
-        existant.setCategories(maj.getCategories());
-        existant.setZonesLivraison(maj.getZonesLivraison());
-        existant.setFraisLivraisonFcfa(maj.getFraisLivraisonFcfa());
+    public FournisseurMateriaux completerProfil(@RequestBody FournisseurMateriaux dto) {
+        String userId = currentUserProvider.getCurrentUserId();
+        FournisseurMateriaux existant = fournisseurRepository.findById(userId)
+                .orElseThrow(() -> new RessourceIntrouvableException("Fournisseur introuvable"));
+        
+        // Mettre à jour les champs spécifiques
+        if (dto.getNomBoutique() != null) {
+            existant.setNomBoutique(dto.getNomBoutique());
+        }
+        if (dto.getNif() != null) {
+            existant.setNif(dto.getNif());
+        }
+        if (dto.getCategories() != null) {
+            existant.setCategories(dto.getCategories());
+        }
+        if (dto.getZonesLivraison() != null) {
+            existant.setZonesLivraison(dto.getZonesLivraison());
+        }
+        if (dto.getFraisLivraisonFcfa() != null) {
+            existant.setFraisLivraisonFcfa(dto.getFraisLivraisonFcfa());
+        }
+        
         FournisseurMateriaux saved = fournisseurRepository.save(existant);
         kycService.verifierIdentiteDeclaree(saved);
         return saved;

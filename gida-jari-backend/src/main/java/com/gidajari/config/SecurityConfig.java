@@ -39,11 +39,24 @@ public class SecurityConfig {
     private String originesAutorisees;
 
     private static final String[] ENDPOINTS_PUBLICS = {
+            // Authentification
             "/api/auth/**",
+
+            // API publiques
             "/api/public/**",
+
+            // Swagger / OpenAPI
+            "/swagger-ui.html",
+            "/swagger-ui/**",
+            "/v3/api-docs/**",
+            "/v3/api-docs.yaml",
+
+            // Monitoring
             "/actuator/health",
             "/error",
-            "/files/**" // fichiers uploades (photos, documents) servis en lecture via URL non devinable (UUID)
+
+            // Fichiers
+            "/files/**"
     };
 
     @Bean

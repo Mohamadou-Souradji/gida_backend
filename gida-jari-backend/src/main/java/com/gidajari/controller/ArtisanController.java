@@ -34,17 +34,29 @@ public class ArtisanController {
         return artisanRepository.findById(id).orElseThrow(() -> new RessourceIntrouvableException("Artisan introuvable"));
     }
 
-    @PutMapping("/{id}")
+    /**
+     * Compléter le profil artisan avec les informations spécifiques.
+     * L'utilisateur doit être connecté.
+     */
+    @PatchMapping("/complete-profile")
     @PreAuthorize("hasRole('ARTISAN')")
     @Transactional
-    public Artisan mettreAJourProfil(@PathVariable String id, @RequestBody Artisan maj) {
-        currentUserProvider.exigerProprietaire(id);
-        Artisan existant = getProfil(id);
-        existant.setNom(maj.getNom());
-        existant.setPrenom(maj.getPrenom());
-        existant.setCorpsDeMetier(maj.getCorpsDeMetier());
-        existant.setZoneIntervention(maj.getZoneIntervention());
-        existant.setTarifJournalierFcfa(maj.getTarifJournalierFcfa());
+    public Artisan completerProfil(@RequestBody Artisan dto) {
+        String userId = currentUserProvider.getCurrentUserId();
+        Artisan existant = artisanRepository.findById(userId)
+                .orElseThrow(() -> new RessourceIntrouvableException("Artisan introuvable"));
+        
+        // Mettre à jour les champs spécifiques
+        if (dto.getCorpsDeMetier() != null) {
+            existant.setCorpsDeMetier(dto.getCorpsDeMetier());
+        }
+        if (dto.getZoneIntervention() != null) {
+            existant.setZoneIntervention(dto.getZoneIntervention());
+        }
+        if (dto.getTarifJournalierFcfa() != null) {
+            existant.setTarifJournalierFcfa(dto.getTarifJournalierFcfa());
+        }
+        
         Artisan saved = artisanRepository.save(existant);
         kycService.verifierIdentiteDeclaree(saved);
         return saved;

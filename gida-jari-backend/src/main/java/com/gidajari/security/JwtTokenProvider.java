@@ -24,21 +24,51 @@ public class JwtTokenProvider {
     @Value("${gida-jari.jwt.secret}")
     private String secret;
 
-    @Value("${gida-jari.jwt.expiration-ms}")
-    private long expirationMs;
+    @Value("${gida-jari.jwt.expiration-ms:3600000}")
+    private long expirationMs; // 1 heure par défaut
+
+    @Value("${gida-jari.jwt.refresh-expiration-ms:604800000}")
+    private long refreshExpirationMs; // 7 jours par défaut
 
     private SecretKey key() {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String genererToken(String userId, String profileType, boolean admin) {
+    /** Génère un access token JWT (courte durée : 1h par défaut). */
+    public String genererAccessToken(String userId, String profileType, boolean admin) {
         Date now = new Date();
         return Jwts.builder()
                 .subject(userId)
                 .claim("profileType", profileType)
                 .claim("admin", admin)
+                .claim("type", "access")
                 .issuedAt(now)
                 .expiration(new Date(now.getTime() + expirationMs))
+                .signWith(key(), Jwts.SIG.HS256)
+                .compact();
+    }
+
+    /** Génère un refresh token JWT (longue durée : 7 jours par défaut). */
+    public String genererRefreshToken(String userId) {
+        Date now = new Date();
+        return Jwts.builder()
+                .subject(userId)
+                .claim("type", "refresh")
+                .issuedAt(now)
+                .expiration(new Date(now.getTime() + refreshExpirationMs))
+                .signWith(key(), Jwts.SIG.HS256)
+                .compact();
+    }
+
+    /** Génère un token temporaire pour l'inscription (10 minutes). */
+    public String genererTokenTemporaire(String phone, String email) {
+        Date now = new Date();
+        return Jwts.builder()
+                .subject(phone)
+                .claim("email", email)
+                .claim("type", "temporary")
+                .issuedAt(now)
+                .expiration(new Date(now.getTime() + 600000)) // 10 minutes
                 .signWith(key(), Jwts.SIG.HS256)
                 .compact();
     }

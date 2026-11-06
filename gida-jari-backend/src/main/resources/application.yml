@@ -1,4 +1,3 @@
-
 server:
   port: 8080
 
@@ -7,9 +6,9 @@ spring:
     name: gida-jari-backend
 
   datasource:
-    url: ${GJ_DB_URL:jdbc:postgresql://localhost:5434/gida_jari}
+    url: ${GJ_DB_URL:jdbc:postgresql://localhost:5432/gida_jari}
     username: ${GJ_DB_USER:gida_jari}
-    password: ${GJ_DB_PASSWORD:GidaJari_Local_2026}
+    password: ${GJ_DB_PASSWORD:change_me}
 
   jpa:
     hibernate:
@@ -54,7 +53,8 @@ gida-jari:
   jwt:
     # A surcharger en production via la variable d'environnement GJ_JWT_SECRET (>= 32 caracteres).
     secret: ${GJ_JWT_SECRET:CHANGE_ME_SECRET_KEY_MIN_256_BITS_XXXXXXXXXXXXXXXX}
-    expiration-ms: 86400000 # 24h
+    expiration-ms: ${GJ_JWT_EXPIRATION:3600000} # 1h (access token)
+    refresh-expiration-ms: ${GJ_JWT_REFRESH_EXPIRATION:604800000} # 7 jours (refresh token)
 
   escrow:
     commission:
@@ -70,11 +70,12 @@ gida-jari:
     expiration-minutes: 5
     tentatives-max: 5
     demandes-max-par-10-minutes: 3
+    # Canal du code de connexion : email (par defaut) ou sms.
     canal: ${GJ_OTP_CANAL:email}
 
-  # Emails (code de connexion OTP).
-  #  - simulation : rien n'est envoye, le code est seulement affiche dans les logs.
-  #  - smtp       : envoi reel via le serveur SMTP configure ci-dessous.
+  # Envoi des emails (code de connexion).
+  #  - simulation : rien n'est envoye, le code s'affiche dans les logs (">>> CODE OTP").
+  #  - smtp       : n'importe quel serveur SMTP (Gmail avec mot de passe d'application, Brevo, OVH...).
   email:
     mode: ${GJ_EMAIL_MODE:simulation}
     expediteur: ${GJ_EMAIL_FROM:no-reply@gidajari.com}
@@ -82,6 +83,7 @@ gida-jari:
     smtp:
       hote: ${GJ_SMTP_HOST:smtp.gmail.com}
       port: ${GJ_SMTP_PORT:587}
+      # starttls (port 587), ssl (port 465) ou aucune (serveur interne uniquement)
       securite: ${GJ_SMTP_SECURITE:starttls}
       utilisateur: ${GJ_SMTP_USER:}
       mot-de-passe: ${GJ_SMTP_PASSWORD:}

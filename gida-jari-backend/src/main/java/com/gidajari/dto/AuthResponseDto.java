@@ -1,11 +1,16 @@
 package com.gidajari.dto;
 
+/**
+ * Réponse d'authentification (après login ou register réussi) : access token + refresh token + métadonnées.
+ * Le token porte : id utilisateur, profileType, admin.
+ */
 public record AuthResponseDto(
-        String token,
+        String accessToken,
+        String refreshToken,
         String userId,
         String profileType,
         String kycLevel,
         boolean admin,
-        /** SUPER_ADMIN, OPERATEUR_KYC, GESTIONNAIRE_FINANCES, LECTEUR (null si non admin). */
         String adminRole
-) {}
+) {
+}

@@ -51,17 +51,37 @@ public class OngController {
         return ongRepository.findById(id).orElseThrow(() -> new RessourceIntrouvableException("Institution introuvable"));
     }
 
-    @PutMapping("/{id}")
+    /**
+     * Compléter le profil ONG/Institution avec les informations spécifiques.
+     * L'utilisateur doit être connecté.
+     */
+    @PatchMapping("/complete-profile")
     @Transactional
-    public ONGInstitution mettreAJourProfil(@PathVariable String id, @RequestBody ONGInstitution maj) {
-        currentUserProvider.exigerProprietaire(id);
-        ONGInstitution existant = getProfil(id);
-        existant.setRaisonSociale(maj.getRaisonSociale());
-        existant.setNifOuRccm(maj.getNifOuRccm());
-        existant.setTypeOrganisation(maj.getTypeOrganisation());
-        existant.setStatutLegal(maj.getStatutLegal());
-        existant.setOddCible(maj.getOddCible());
-        existant.setLogoUrl(maj.getLogoUrl());
+    public ONGInstitution completerProfil(@RequestBody ONGInstitution dto) {
+        String userId = currentUserProvider.getCurrentUserId();
+        ONGInstitution existant = ongRepository.findById(userId)
+                .orElseThrow(() -> new RessourceIntrouvableException("Institution introuvable"));
+        
+        // Mettre à jour les champs spécifiques
+        if (dto.getRaisonSociale() != null) {
+            existant.setRaisonSociale(dto.getRaisonSociale());
+        }
+        if (dto.getNifOuRccm() != null) {
+            existant.setNifOuRccm(dto.getNifOuRccm());
+        }
+        if (dto.getTypeOrganisation() != null) {
+            existant.setTypeOrganisation(dto.getTypeOrganisation());
+        }
+        if (dto.getStatutLegal() != null) {
+            existant.setStatutLegal(dto.getStatutLegal());
+        }
+        if (dto.getOddCible() != null) {
+            existant.setOddCible(dto.getOddCible());
+        }
+        if (dto.getLogoUrl() != null) {
+            existant.setLogoUrl(dto.getLogoUrl());
+        }
+        
         ONGInstitution saved = ongRepository.save(existant);
         kycService.verifierIdentiteDeclaree(saved);
         return saved;
